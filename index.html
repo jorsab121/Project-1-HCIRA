@@ -1,0 +1,191 @@
+<html lang="en">
+
+<body>
+    <canvas id="screen" style="border:1px solid #000000;"></canvas>
+    <script language="javascript">
+        //set up canvas
+        var canvas = document.getElementById('screen');
+        var context = canvas.getContext('2d');
+        canvas.width = 500; 
+        canvas.height = 500;
+
+        //make button
+        let button = document.createElement("button");
+        button.innerHTML = "Clear";
+        button.onclick = function () {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            points = [];
+        }
+        document.body.appendChild(button);
+
+        //event listeners
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mousedown', position);
+        canvas.addEventListener('mouseup', position);
+        //FOR DEBUGGING DELETE LATER
+        document.addEventListener('keyup', event => {
+            if (event.code === 'Space') {
+                p = "";
+                for (let i = 0; i < points.length; i++) {
+                    p += points[i] + " | ";
+                }
+            }
+            alert(p);
+        })
+
+        //position variable
+        var pos = { x: 0, y: 0 };
+
+        //functions for event listeners
+        function position(mouse) {
+            pos.x = mouse.clientX - 10;
+            pos.y = mouse.clientY - 7;
+        }
+
+        function draw(mouse) {
+            if (mouse.buttons !== 1)
+                return;
+            context.beginPath();
+            context.lineWidth = 5;
+
+            context.moveTo(pos.x, pos.y);
+            storePoint(pos.x, pos.y);
+            position(mouse);
+            context.lineTo(pos.x, pos.y);
+
+            context.stroke();
+            context.closePath();
+        }
+
+        //store image points
+        points = [];
+        function storePoint(x,y) {
+            points.push([x, y]);
+        }
+
+        //helper functions for preproccessing
+        function getDistance(a, b) {
+            xDiff = Math.abs(a[0] - b[0]);
+            yDiff = Math.abs(a[1] - b[1]);
+            distance = Math.sqrt(xDiff * Diff + yDiff * yDiff);
+            return distance;
+        }
+
+        function calculateLength(p) {
+            length = 0;
+            for (let i = 1; i < p.length; ++i) {
+                length += getDistance(p[0], p[1]);
+            }
+            return length;
+        }
+
+        //resampling
+        function resampling(points, rate) {
+            pathLength = calculateLength(points);
+            interval = pathLength / rate; //preferred distance between data points
+            D = 0;
+            resampled = [];
+            resampled.push(points[0]);
+            for (let i = 1; i < points.length; ++i) {
+                relativeDistance = getDistance(points[i - 1], points[i]);
+                if (D + relativeDistance > interval) {
+                    tempX = points[i - 1][0] + (interval - D) / relativeDistance * (points[i][0] - points[i - 1][0])
+                    tempY = points[i - 1][1] + (interval - D) / relativeDistance * (points[i][1] - points[i - 1][1])
+                    temp = [tempX, tempY];
+                    resampled.push(temp);
+                    D = 0;
+                }
+                else {
+                    D += relativeDistance;
+                }
+            }
+            return resampled;
+        }
+
+        //rotation
+        function centroid(graph) {
+            x = 0;
+            y = 0;
+            for (let i = 0; i < graph.length; ++i) {
+                x += graph[i][0];
+                y += graph[i][1];
+            }
+            x /= graph.length;
+            y /= graph.length;
+            temp = [x, y];
+            return temp;
+        }
+
+        function rotateBy(original, theta) {
+            newArray = [];
+            c = centroid(original);
+            for (let i = 0; i < original.length; ++i) {
+                tempX = (original[i][0] - c[0]) * Math.cos(theta) - (original[i][1] - c[1]) * Math.sin(theta) + c[0];
+                tempY = (original[i][0] - c[0]) * Math.sin(theta) - (original[i][1] - c[1]) * Math.cos(theta) + c[1];
+                temp = [tempX, tempY];
+                newArray.push(temp);
+            }
+            return newArray;
+        }
+
+        function rotateToZero(original) {
+            c = centroid(original);
+            tempX = c[0] - original[0][0];
+            tempY = c[1] - original[0][1];
+            theta = Math.atan(tempY, tempX);
+            return rotateBy(original, theta);
+        }
+
+        //scaling + translation
+        function boundToSquare(original, size) {
+            minX = Infinity;
+            maxX = Math.log(0); //-inf
+            minY = Infinity;
+            maxY = Math.log(0);
+
+            for (let i = 0; i < original.length; i++)
+            {
+                minX = Math.min(minX, original[i][0]);
+                minY = Math.min(minY, original[i][1]);
+                maxX = Math.max(maxX, original[i][0]);
+                maxY = Math.max(maxY, original[i][1]);
+            }
+            width = maxX - minX;
+            height = maxY - minY;
+            for (let i = 0; i < original.length; i++)
+            {
+                original[i][0] = original[i][0] * (size / width);
+                original[i][1] = original[i][1] * (size / height);
+            }
+            return original;
+        }
+
+        function translateToOrigin(original) {
+            c = cetroid(original);
+            for (let i = 0; i < original.length; ++i) {
+                original[i][0] = original[i][0] - c[0];
+                original[i][1] = original[i][1] - c[1];
+            }
+            return original;
+        }
+
+
+
+
+
+
+
+
+
+        class Template {
+            constructor(name) {
+
+            }
+        }
+
+        
+        
+
+    </script>
+</body>
+ </html>
