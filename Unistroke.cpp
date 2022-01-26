@@ -1,4 +1,4 @@
-﻿// Unistroke.cpp : 此文件包含 "main" 函数。程序执行将在此处开始并结束。
+// Unistroke.cpp : 此文件包含 "main" 函数。程序执行将在此处开始并结束。
 //
 
 #include <iostream>
@@ -42,6 +42,12 @@ public:
     {
         return pointVector;
     }
+};
+
+struct result
+{
+    int b = INT_MAX;
+
 };
 
 int main()
@@ -165,6 +171,74 @@ vector<point> translateToOrigin(vector<point> original)
 //end of step 3
 
 //start of step 4
-    
+int pathDistance(vector<point> candidate, vector<point> graphTemplate)
+{
+    //assuming template has the same amount of points as template does.
+    int d = 0;
+    for(int i = 0; i < candidate.size(); i++)
+    {
+        d += getDistance(candidate[i], graphTemplate[i]);
+    }
+    return d / candidate.size();
+}
+int distanceAtAngle(vector<point> candidate, vector<point> graphTemplate, double theta)
+{
+    vector<point> temp = rotateBy(candidate, theta);
+    int d = pathDistance(temp, graphTemplate);
+    return d;
+}
+int distanceAtBestAngle(vector<point> candidate, vector<point> graphTemplate, double thetaA, double thetaB, double thetaDelta)
+{
+    double PHI = 0.5 * (-1 + sqrt(5));
 
+    double x1 = PHI * thetaA + (1 - PHI) * thetaB;
+    int f1 = distanceAtAngle(candidate, graphTemplate, x1);
 
+    double x2 = (1 - PHI) * thetaA + PHI * thetaB;
+    int f2 = distanceAtAngle(candidate, graphTemplate, x2);
+
+    while(abs(thetaB - thetaA) > thetaDelta)
+    {
+        if(f1 < f2)
+        {
+            thetaB = x2;
+            x2 = x1;
+            f2 = f1;
+            x1 = PHI * thetaA + (1 - PHI) * thetaB;
+            f1= distanceAtAngle(candidate, graphTemplate, x1);
+        }
+        else
+        {
+            thetaA = x1;
+            x1 = x2;
+            f1 = f2;
+            x2 = (1 - PHI) * thetaA + PHI * thetaB;
+            f2 = distanceAtAngle(candidate, graphTemplate, x2);
+        }
+    }
+    return min(f1, f2);
+}
+
+string regognition(vector<point> candidate, vector<vector<point>> graphTemplates)
+{
+    double theta = PI / 4; //45 degrees;
+    double negativeTheta = -1 * theta;
+    double thetaDelta = 1 / 90 * PI;
+    double b = INT_MAX;
+    double d = 0;
+    double score = 0;
+    int size = 0; //size of square, dummy variable now.
+    string result; // dummy variable now.
+    vector<point> currentTemplate;
+    for(int i = 0; i < graphTemplates.size(); i++)
+    {
+        d = distanceAtBestAngle(candidate, graphTemplates[i], negativeTheta, theta, thetaDelta);
+        if(d < b)
+        {
+            d = b;
+            currentTemplate = graphTemplates[i];
+        }
+    }
+    score = 1 - b / 0.5 * sqrt(size * size + size * size);
+    return result;
+}
