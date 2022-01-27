@@ -18,182 +18,30 @@
         }
         document.body.appendChild(button);
 
-        //event listeners
-        canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('mousedown', position);
-        canvas.addEventListener('mouseup', mouseUp);
-        //FOR DEBUGGING DELETE LATER
-        document.addEventListener('keyup', event => {
-            if (event.code === 'Space') {
-                p = "";
-                for (let i = 0; i < points.length; i++) {
-                    p += points[i] + " | ";
-                }
-            }
-            alert(p);
-        })
 
-        //position variable
-        var pos = { x: 0, y: 0 };
-
-        //functions for event listeners
-        function mouseUp(mouse) {
-            position(mouse);
-            recognize();
-        }
-
-        function position(mouse) {
-            pos.x = mouse.clientX - 10;
-            pos.y = mouse.clientY - 7;
-        }
-
-        function draw(mouse) {
-            if (mouse.buttons !== 1)
-                return;
-            context.beginPath();
-            context.lineWidth = 5;
-
-            context.moveTo(pos.x, pos.y);
-            storePoint(pos.x, pos.y);
-            position(mouse);
-            context.lineTo(pos.x, pos.y);
-
-            context.stroke();
-            context.closePath();
-        }
-
-        //store image points
-        points = [];
-        function storePoint(x,y) {
-            points.push([x, y]);
-        }
-
-        //helper functions for preproccessing
-        function getDistance(a, b) {
-            xDiff = Math.abs(a[0] - b[0]);
-            yDiff = Math.abs(a[1] - b[1]);
-            distance = Math.sqrt(xDiff * Diff + yDiff * yDiff);
-            return distance;
-        }
-
-        function calculateLength(p) {
-            length = 0;
-            for (let i = 1; i < p.length; ++i) {
-                length += getDistance(p[0], p[1]);
-            }
-            return length;
-        }
-
-        //resampling
-        function resampling(points, rate) {
-            pathLength = calculateLength(points);
-            interval = pathLength / rate; //preferred distance between data points
-            D = 0;
-            resampled = [];
-            resampled.push(points[0]);
-            for (let i = 1; i < points.length; ++i) {
-                relativeDistance = getDistance(points[i - 1], points[i]);
-                if (D + relativeDistance > interval) {
-                    tempX = points[i - 1][0] + (interval - D) / relativeDistance * (points[i][0] - points[i - 1][0])
-                    tempY = points[i - 1][1] + (interval - D) / relativeDistance * (points[i][1] - points[i - 1][1])
-                    temp = [tempX, tempY];
-                    resampled.push(temp);
-                    D = 0;
-                }
-                else {
-                    D += relativeDistance;
-                }
-            }
-            return resampled;
-        }
-
-        //rotation
-        function centroid(graph) {
-            x = 0;
-            y = 0;
-            for (let i = 0; i < graph.length; ++i) {
-                x += graph[i][0];
-                y += graph[i][1];
-            }
-            x /= graph.length;
-            y /= graph.length;
-            temp = [x, y];
-            return temp;
-        }
-
-        function rotateBy(original, theta) {
-            newArray = [];
-            c = centroid(original);
-            for (let i = 0; i < original.length; ++i) {
-                tempX = (original[i][0] - c[0]) * Math.cos(theta) - (original[i][1] - c[1]) * Math.sin(theta) + c[0];
-                tempY = (original[i][0] - c[0]) * Math.sin(theta) - (original[i][1] - c[1]) * Math.cos(theta) + c[1];
-                temp = [tempX, tempY];
-                newArray.push(temp);
-            }
-            return newArray;
-        }
-
-        function rotateToZero(original) {
-            c = centroid(original);
-            tempX = c[0] - original[0][0];
-            tempY = c[1] - original[0][1];
-            theta = Math.atan(tempY, tempX);
-            return rotateBy(original, theta);
-        }
-
-        //scaling + translation
-        function boundToSquare(original, size) {
-            minX = Infinity;
-            maxX = Math.log(0); //-inf
-            minY = Infinity;
-            maxY = Math.log(0);
-
-            for (let i = 0; i < original.length; i++)
-            {
-                minX = Math.min(minX, original[i][0]);
-                minY = Math.min(minY, original[i][1]);
-                maxX = Math.max(maxX, original[i][0]);
-                maxY = Math.max(maxY, original[i][1]);
-            }
-            width = maxX - minX;
-            height = maxY - minY;
-            for (let i = 0; i < original.length; i++)
-            {
-                original[i][0] = original[i][0] * (size / width);
-                original[i][1] = original[i][1] * (size / height);
-            }
-            return original;
-        }
-
-        function translateToOrigin(original) {
-            c = cetroid(original);
-            for (let i = 0; i < original.length; ++i) {
-                original[i][0] = original[i][0] - c[0];
-                original[i][1] = original[i][1] - c[1];
-            }
-            return original;
-        }
 
 
         //template class
         class Template {
             name = "";
             data = [];
+            processedData = [];
             constructor(name) {
                 this.name = name;
             }
         }
 
         //CREATE TEMPLATES
-        templates = [];
+        templates = [];       
 
         triangle = new Template("triangle");
-        trangle.data = [[137, 139], [135, 141], [133, 144], [132, 146], [130, 149], [128, 151], [126, 155], [123, 160], [120, 166], [116, 171], [112, 177], [107, 183], [102, 188], [100, 191], [95, 195], [90, 199], [86, 203], [82, 206], [80, 209], [75, 213], [73, 213], [70, 216], [67, 219], [64, 221], [61, 223], [60, 225], [62, 226], [65, 225], [67, 226], [74, 226], [77, 227], [85, 229], [91, 230], [99, 231], [108, 232], [116, 233], [125, 233], [134, 234], [145, 233], [153, 232], [160, 233], [170, 234], [177, 235], [179, 236], [186, 237], [193, 238], [198, 239], [200, 237], [202, 239], [204, 238], [206, 234], [205, 230], [202, 222], [197, 216], [192, 207], [186, 198], [179, 189], [174, 183], [170, 178], [164, 171], [161, 168], [154, 160], [148, 155], [143, 150], [138, 148], [136, 148]];
+        triangle.data = [[137, 139], [135, 141], [133, 144], [132, 146], [130, 149], [128, 151], [126, 155], [123, 160], [120, 166], [116, 171], [112, 177], [107, 183], [102, 188], [100, 191], [95, 195], [90, 199], [86, 203], [82, 206], [80, 209], [75, 213], [73, 213], [70, 216], [67, 219], [64, 221], [61, 223], [60, 225], [62, 226], [65, 225], [67, 226], [74, 226], [77, 227], [85, 229], [91, 230], [99, 231], [108, 232], [116, 233], [125, 233], [134, 234], [145, 233], [153, 232], [160, 233], [170, 234], [177, 235], [179, 236], [186, 237], [193, 238], [198, 239], [200, 237], [202, 239], [204, 238], [206, 234], [205, 230], [202, 222], [197, 216], [192, 207], [186, 198], [179, 189], [174, 183], [170, 178], [164, 171], [161, 168], [154, 160], [148, 155], [143, 150], [138, 148], [136, 148]];
         templates.push(triangle);
+
 
         x = new Template("x");
         x.data = [[87, 142], [89, 145], [91, 148], [93, 151], [96, 155], [98, 157], [100, 160], [102, 162], [106, 167], [108, 169], [110, 171], [115, 177], [119, 183], [123, 189], [127, 193], [129, 196], [133, 200], [137, 206], [140, 209], [143, 212], [146, 215], [151, 220], [153, 222], [155, 223], [157, 225], [158, 223], [157, 218], [155, 211], [154, 208], [152, 200], [150, 189], [148, 179], [147, 170], [147, 158], [147, 148], [147, 141], [147, 136], [144, 135], [142, 137], [140, 139], [135, 145], [131, 152], [124, 163], [116, 177], [108, 191], [100, 206], [94, 217], [91, 222], [89, 225], [87, 226], [87, 224]];
-        templates.push(triangle);
+        templates.push(x);
 
         rectangle = new Template("rectangle");
         rectangle.data = [[78, 149], [78, 153], [78, 157], [78, 160], [79, 162], [79, 164], [79, 167], [79, 169], [79, 173], [79, 178], [79, 183], [80, 189], [80, 193], [80, 198], [80, 202], [81, 208], [81, 210], [81, 216], [82, 222], [82, 224], [82, 227], [83, 229], [83, 231], [85, 230], [88, 232], [90, 233], [92, 232], [94, 233], [99, 232], [102, 233], [106, 233], [109, 234], [117, 235], [123, 236], [126, 236], [135, 237], [142, 238], [145, 238], [152, 238], [154, 239], [165, 238], [174, 237], [179, 236], [186, 235], [191, 235], [195, 233], [197, 233], [200, 233], [201, 235], [201, 233], [199, 231], [198, 226], [198, 220], [196, 207], [195, 195], [195, 181], [195, 173], [195, 163], [194, 155], [192, 145], [192, 143], [192, 138], [191, 135], [191, 133], [191, 130], [190, 128], [188, 129], [186, 129], [181, 132], [173, 131], [162, 131], [151, 132], [149, 132], [138, 132], [136, 132], [122, 131], [120, 131], [109, 130], [107, 130], [90, 132], [81, 133], [76, 133]];
@@ -251,9 +99,253 @@
         pigtail.data = [[81, 219], [84, 218], [86, 220], [88, 220], [90, 220], [92, 219], [95, 220], [97, 219], [99, 220], [102, 218], [105, 217], [107, 216], [110, 216], [113, 214], [116, 212], [118, 210], [121, 208], [124, 205], [126, 202], [129, 199], [132, 196], [136, 191], [139, 187], [142, 182], [144, 179], [146, 174], [148, 170], [149, 168], [151, 162], [152, 160], [152, 157], [152, 155], [152, 151], [152, 149], [152, 146], [149, 142], [148, 139], [145, 137], [141, 135], [139, 135], [134, 136], [130, 140], [128, 142], [126, 145], [122, 150], [119, 158], [117, 163], [115, 170], [114, 175], [117, 184], [120, 190], [125, 199], [129, 203], [133, 208], [138, 213], [145, 215], [155, 218], [164, 219], [166, 219], [177, 219], [182, 218], [192, 216], [196, 213], [199, 212], [201, 211]];
         templates.push(pigtail);
 
-        //RECOGNIZE
-        function recognize() {
 
+        //preproccess templates
+        for (let i = 0; i < templates.length; ++i) {
+            templates[i].processedData = preprocess(templates[i].data);
+        }
+
+
+        //event listeners
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mousedown', position);
+        canvas.addEventListener('mouseup', mouseUp);
+        //FOR DEBUGGING DELETE LATER
+        document.addEventListener('keyup', event => {
+            if (event.code === 'Space') {
+                p = "";
+                for (let i = 0; i < points.length; i++) {
+                    p += points[i] + " | ";
+                }
+            }
+            alert(p);
+        })
+
+        //position variable
+        var pos = { x: 0, y: 0 };
+
+        //functions for event listeners
+        function mouseUp(mouse) {
+            position(mouse);
+            processedPoints = preprocess(points);
+            result = recognize(processedPoints, templates);
+            context.lineWidth = 1;
+            context.font = "20px Arial";
+            context.strokeText(result, 10, 20);
+        }
+
+        function position(mouse) {
+            pos.x = mouse.clientX - 10;
+            pos.y = mouse.clientY - 7;
+        }
+
+        function draw(mouse) {
+            if (mouse.buttons !== 1)
+                return;
+            context.beginPath();
+            context.lineWidth = 5;
+
+            context.moveTo(pos.x, pos.y);
+            storePoint(pos.x, pos.y);
+            position(mouse);
+            context.lineTo(pos.x, pos.y);
+
+            context.stroke();
+            context.closePath();
+        }
+
+        //store image points
+        points = [];
+        function storePoint(x,y) {
+            points.push([x, y]);
+        }
+
+        //preprocess data
+        function preprocess(data) {
+            temp = [];
+            temp = resampling(data, 64);
+            temp = rotateToZero(temp);
+            temp = ScaleToSquare(temp, 250);
+            temp = translateToOrigin(temp);
+            return temp;
+        }
+       
+        //helper functions for preproccessing
+        function getDistance(a, b) {
+            xDiff = Math.abs(a[0] - b[0]);
+            yDiff = Math.abs(a[1] - b[1]);
+            distance = Math.sqrt(xDiff * xDiff + yDiff * yDiff);
+            return distance;
+        }
+
+        function calculateLength(p) {
+            length = 0;
+            for (let i = 1; i < p.length; ++i) {
+                length += getDistance(p[i-1], p[i]);
+            }
+            return length;
+        }
+
+        //resampling
+        function resampling(points, n) {
+            pathLength = calculateLength(points);
+            interval = pathLength / (n-1); //preferred distance between data points
+            D = 0;
+            resampled = [];
+            resampled.push(points[0]);
+            for (let i = 1; i < points.length; ++i) {
+                relativeDistance = getDistance(points[i - 1], points[i]);
+                if (D + relativeDistance >= interval) {
+                    tempX = points[i - 1][0] + ((interval - D) / relativeDistance) * (points[i][0] - points[i - 1][0]);
+                    tempY = points[i - 1][1] + ((interval - D) / relativeDistance) * (points[i][1] - points[i - 1][1]);
+                    temp = [tempX, tempY];
+                    resampled.push(temp);
+                    points.splice(i, 0, temp);
+                    D = 0;
+                }
+                else {
+                    D += relativeDistance;
+                }
+            }
+            if (resampled.length = n - 1) {
+                last = [points[points.length - 1][0], points[points.length - 1][1]];
+                resampled.push(last);
+             }
+            return resampled;
+        }
+
+        //rotation
+        function centroid(graph) {
+            x = 0;
+            y = 0;
+            for (let i = 0; i < graph.length; ++i) {
+                x += graph[i][0];
+                y += graph[i][1];
+            }
+            x /= graph.length;
+            y /= graph.length;
+            temp = [x, y];
+            return temp;
+        }
+
+        function rotateBy(original, theta) {
+            newArray = [];
+            c = centroid(original);
+            for (let i = 0; i < original.length; ++i) {
+                tempX = (original[i][0] - c[0]) * Math.cos(theta) - (original[i][1] - c[1]) * Math.sin(theta) + c[0];
+                tempY = (original[i][0] - c[0]) * Math.sin(theta) + (original[i][1] - c[1]) * Math.cos(theta) + c[1];
+                temp = [tempX, tempY];
+                newArray.push(temp);
+            }
+            return newArray;
+        }
+
+        function rotateToZero(original) {
+            c = centroid(original);
+            tempX = c[0] - original[0][0];
+            tempY = c[1] - original[0][1];
+            theta = Math.atan2(tempY, tempX);
+            return rotateBy(original, -1 * theta);
+        }
+
+        //scaling + translation
+        function ScaleToSquare(original, size) {
+            minX = Infinity;
+            maxX = Math.log(0); //-inf
+            minY = Infinity;
+            maxY = Math.log(0);
+
+            for (let i = 0; i < original.length; i++)
+            {
+                minX = Math.min(minX, original[i][0]);
+                minY = Math.min(minY, original[i][1]);
+                maxX = Math.max(maxX, original[i][0]);
+                maxY = Math.max(maxY, original[i][1]);
+            }
+            width = maxX - minX;
+            height = maxY - minY;
+            for (let i = 0; i < original.length; i++)
+            {
+                original[i][0] = original[i][0] * (size / width);
+                original[i][1] = original[i][1] * (size / height);
+            }
+            return original;
+        }
+
+        function translateToOrigin(original) {
+            c = centroid(original);
+            for (let i = 0; i < original.length; ++i) {
+                original[i][0] = original[i][0] - c[0];
+                original[i][1] = original[i][1] - c[1];
+            }
+
+            return original;
+        }
+
+        //matching process
+        function recognize(candidate, templates) {
+            theta = Math.PI / 4;
+            negativeTheta = -1 * theta;
+            thetaDelta = Math.PI / 90;
+            b = Infinity;
+            d = 0;
+            score = 0;
+            size = 250;
+            result = ".";
+            currentTemplate = [];
+            for (let i = 0; i < templates.length; ++i) {
+                d = distanceAtBestAngle(candidate, templates[i].processedData, negativeTheta, theta, thetaDelta);
+                if (d < b) {
+                    b = d;
+                    currentTemplate = templates[i];
+                }
+            }
+            score = 1 - b / (.5 * Math.sqrt(size * size + size * size));
+            result = currentTemplate.name  + " (" + score + ")";
+            return result;
+        }
+
+        function pathDistance(candidate, graphTemplate) {
+            d = 0;
+            for (let i = 0; i < candidate.length; ++i) {
+                d += getDistance(candidate[i], graphTemplate[i]);
+            }
+            return d / candidate.length;
+        }
+
+        function distanceAtAngle(candidate, graphTemplate, theta) {
+            temp = rotateBy(candidate, theta);
+            d = pathDistance(temp, graphTemplate);
+            return d;
+        }
+
+        function distanceAtBestAngle(candidate, graphTemplate, thetaA, thetaB, thetaDelta) {
+            PHI = .5 * (-1 + Math.sqrt(5));
+            x1 = PHI * thetaA + (1 - PHI) * thetaB;
+            f1 = distanceAtAngle(candidate, graphTemplate, x1);
+
+            x2 = (1 - PHI) * thetaA + PHI * thetaB;
+            f2 = distanceAtAngle(candidate, graphTemplate, x2);
+
+            //alert(f1 + " " + f2);
+
+            while (Math.abs(thetaB - thetaA) > thetaDelta) {
+                if (f1 < f2) {
+                    thetaB = x2;
+                    x2 = x1;
+                    f2 = f1;
+                    x1 = PHI * thetaA + (1 - PHI) * thetaB;
+                    f1 = distanceAtAngle(candidate, graphTemplate, x1);
+                }
+                else {
+                    thetaA = x1;
+                    x1 = x2;
+                    f1 = f2;
+                    x2 = (1 - PHI) * thetaA + PHI * thetaB;
+                    f2 = distanceAtAngle(candidate, graphTemplate, x2);
+                }
+            }
+            return Math.min(f1, f2);
         }
 
     </script>
