@@ -1,0 +1,81 @@
+<html lang="en">
+
+<body>
+
+    <form id="form1">
+        <table border="0">
+            <tr>
+                <td>
+                    Student Name: 
+                </td>
+                <td>
+                    <input id="name" name="name" type="text" />
+                </td>
+            </tr>
+        </table>
+   </form>
+   <form id="form1">
+    <table border="0">
+        <tr>
+            <td>
+                Algorithm: 
+            </td>
+            <td>
+                <input id="algo" name="algo" type="text" />
+            </td>
+        </tr>
+    </table>
+</form>
+<form id="form1">
+    <table border="0">
+        <tr>
+            <td>
+                Dataset: 
+            </td>
+            <td>
+                <input id="dataset" name="dataset" type="text" />
+            </td>
+        </tr>
+    </table>
+</form>
+
+    <script language="javascript">
+
+    let read = document.createElement("button");
+    var logName = ""
+    var logAlgo = ""
+    var logData = ""
+    read.innerHTML = "Read Info";
+        read.onclick = function () 
+        {
+            logName = document.getElementById("name").value
+            logAlgo = document.getElementById("algo").value
+            logDataset = document.getElementById("dataset").value
+            //alert(name)
+            //alert(algo)
+            //alert(dataset)
+        }
+        document.body.appendChild(read);  
+        
+        var firstLine = logName + "// " + logAlgo + "// " + logData + "\n"
+        var data = []
+        data.push(firstLine);
+        var secondLine = "User[all-users],GestureType[all-gestures-types],RandomIteration[1to100],#ofTrainingExamples[E],TotalSizeOfTrainingSet[count],TrainingSetContents[specific-gesture-instances],Candidate[specific-instance],RecoResultGestureType[what-was-recognized],CorrectIncorrect[1or0],RecoResultScore,RecoResultBestMatch[specific-instance],RecoResultNBestSorted[instance-and-score]\n"
+        data.push(secondLine)
+        var blob = new Blob(data, {type:"text/csv,charset=UTF-8"})
+        var csvWrite = URL.createObjectURL(blob)
+        var save = document.createElement("a")
+
+let button = document.createElement("button");
+button.innerHTML = "Save";
+        button.onclick = function () {
+            save.download = "data.csv"
+            save.href = csvWrite
+            save.click()
+        }
+        document.body.appendChild(button);
+
+
+    </script>
+</body>
+ </html>
