@@ -48,7 +48,7 @@
                                 nameRun = "0" + (run +1);
                             else
                                 nameRun = 10;
-                            download(strokes, graphNames[graphNum] + "-" + nameRun);
+                            download(strokes, graphNames[graphNum] + twoDigitFormatter(nameRun));
                             context.clearRect(0, 0, canvas.width, canvas.height);
                             points = [];
                             if(graphNum < 15)
@@ -144,7 +144,7 @@
                         var data = "";
                         var firstLine = "<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?>\n"
                         data += firstLine;
-                        var secondLine = "<Gesture Name=\"" + graphNames[graphNum] + (run + 1) +"\">\n";
+                        var secondLine = "<Gesture Name=\"" + graphNames[graphNum] + twoDigitFormatter(run + 1) +"\">\n";
                         data += secondLine;
                         for(let j = 0; j < strokes.length; ++j)
                         {
@@ -168,8 +168,18 @@
                     function pointFormatter(point)
                     {
                         var str = "";
-                        str = "\t<Point X=\""+ point[0] +"\" Y=\""+ point[1] + "\" T=\"undefined\" />\n"
+                        str = "\t<Point X=\""+ point[0] +"\" Y=\""+ point[1] + "\" T=\"0\" />\n"
                         return str;
+                    }
+
+                    function twoDigitFormatter(number)
+                    {
+                        var output = number + '';
+                        while (output.length < 2) 
+                            {
+                                output = '0' + output;
+                            }
+                        return output;
                     }
                     
             
