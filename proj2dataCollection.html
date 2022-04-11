@@ -1,188 +1,188 @@
+<html lang="en">
 
-        <html lang="en">
+    <body>
+        <canvas id="screen" style="border:1px solid #000000;"></canvas>
+        <script language="javascript">
+            //set up canvas
 
-            <body>
-                <canvas id="screen" style="border:1px solid #000000;"></canvas>
-                <script language="javascript">
-                    //set up canvas
+            var canvas = document.getElementById('screen');
+            var context = canvas.getContext('2d');
+            canvas.width = 500; 
+            canvas.height = 500;
+            var run = 0;
+            var graphNum = 0;
+            graphNames = ["T", "N", "D", "P", "X", "H", "I", "exclamation_point", "line", "five_point_star", "null", "arrowhead", "pitchfork", "six_point_star", "asterisk", "half_note"];
 
-                    var canvas = document.getElementById('screen');
-                    var context = canvas.getContext('2d');
-                    canvas.width = 500; 
-                    canvas.height = 500;
-                    var run = 0;
-                    var graphNum = 0;
-                    graphNames = ["T", "N", "D", "P", "X", "H", "I", "exclamation_point", "line", "five_point_star", "null", "arrowhead", "pitchfork", "six_point_star", "asterisk", "half_note"];
+            //make button
+            //clear button
+            let button = document.createElement("button");
+            button.innerHTML = "Clear";
+            button.onclick = function () {
+                if(run < 10)
+                {
+                context.clearRect(0, 0, canvas.width, canvas.height);
+                points = [];
+                strokes = [];
+                context.font = "20px Arial";
+                context.strokeText((graphNum+1) + ". " + graphNames[graphNum], 10, 40);
+                context.strokeText("round: " + run, 10, 20);
+                }
+                else
+                {
+                    context.clearRect(0, 0, canvas.width, canvas.height);
+                    points = [];
+                    context.strokeText("Completed!", 10, 20);
+                    context.strokeText("Thanks for your participation!", 10, 40);
+                }
+            }
 
-                    //make button
-                    //clear button
-                    let button = document.createElement("button");
-                    button.innerHTML = "Clear";
-                    button.onclick = function () {
-                        if(run < 10)
-                        {
-                        context.clearRect(0, 0, canvas.width, canvas.height);
-                        points = [];
-                        stroks = [];
-                        context.font = "20px Arial";
-                        context.strokeText((graphNum+1) + ". " + graphNames[graphNum], 10, 40);
-                        context.strokeText("round: " + run, 10, 20);
-                        }
-                        else
-                        {
-                            context.clearRect(0, 0, canvas.width, canvas.height);
-                            points = [];
-                            context.strokeText("Completed!", 10, 20);
-                            context.strokeText("Thanks for your participation!", 10, 40);
-                        }
+            //button for next graph drawing
+            let button1 = document.createElement("button");
+            button1.innerHTML = "Save and Proceed to Next";
+            button1.onclick = function () {
+                if(run < 10)
+                {
+                    var nameRun;
+                    if(run + 1 != 10)
+                        nameRun = "0" + (run +1);
+                    else
+                        nameRun = 10;
+                    download(strokes, graphNames[graphNum] + twoDigitFormatter(nameRun));
+                    context.clearRect(0, 0, canvas.width, canvas.height);
+                    strokes = [];
+                    points = [];
+                    if(graphNum < 15)
+                    {
+                        graphNum += 1;
                     }
-
-                    //button for next graph drawing
-                    let button1 = document.createElement("button");
-                    button1.innerHTML = "Save and Proceed to Next";
-                    button1.onclick = function () {
-                        if(run < 10)
-                        {
-                            var nameRun;
-                            if(run + 1 != 10)
-                                nameRun = "0" + (run +1);
-                            else
-                                nameRun = 10;
-                            download(strokes, graphNames[graphNum] + twoDigitFormatter(nameRun));
-                            context.clearRect(0, 0, canvas.width, canvas.height);
-                            points = [];
-                            if(graphNum < 15)
-                            {
-                                graphNum += 1;
-                            }
-                            else
-                            {
-                                graphNum = 0;
-                                run += 1;
-                            }
-                            context.font = "20px Arial";
-                            context.strokeText((graphNum+1) + ". " + graphNames[graphNum], 10, 40);
-                            context.strokeText("round: " + run, 10, 20);
-                            CreateXML();
-                        }
-                        else
-                        {
-                            context.clearRect(0, 0, canvas.width, canvas.height);
-                            points = [];
-                            context.strokeText("Completed!", 10, 20);
-                            context.strokeText("Thanks for your participation!", 10, 40);
-                        }
-
-
-                        
+                    else
+                    {
+                        graphNum = 0;
+                        run += 1;
                     }
-                    document.body.appendChild(button);
-                    document.body.appendChild(button1);
-
-                    //Displaying initial prompt
                     context.font = "20px Arial";
                     context.strokeText((graphNum+1) + ". " + graphNames[graphNum], 10, 40);
                     context.strokeText("round: " + run, 10, 20);
-
-                    //event listeners
-                    canvas.addEventListener('mousemove', draw);
-                    canvas.addEventListener('mousedown', position);
-                    canvas.addEventListener('mouseup', mouseUp);
-                    //FOR DEBUGGING DELETE LATER
-                    document.addEventListener('keyup', event => {
-                        if (event.code === 'Space') {
-                            p = "";
-                            for (let i = 0; i < strokes.length; i++) {
-                                p += strokes[i] + " | ";
-                            }
-                        }
-                        alert(p);
-                    })
-            
-                    //position variable
-                    var pos = { x: 0, y: 0 };
-
-                    //contains strokes
-                    var strokes = [];
-            
-                    //functions for event listeners
-                    function mouseUp(mouse) {
-                        position(mouse);
-                        context.lineWidth = 1;
-                        strokes.push(points);
-                        points = [];
-                    }
-            
-                    function position(mouse) {
-                        pos.x = mouse.clientX - 10;
-                        pos.y = mouse.clientY - 7;
-                    }
-            
-                    function draw(mouse) {
-                        if (mouse.buttons !== 1)
-                            return;
-                        context.beginPath();
-                        context.lineWidth = 5;
-            
-                        context.moveTo(pos.x, pos.y);
-                        storePoint(pos.x, pos.y);
-                        position(mouse);
-                        context.lineTo(pos.x, pos.y);
-            
-                        context.stroke();
-                        context.closePath();
-                    }
-            
-                    //store image points
+                    CreateXML();
+                }
+                else
+                {
+                    context.clearRect(0, 0, canvas.width, canvas.height);
                     points = [];
-                    function storePoint(x,y) {
-                        points.push([x, y]);
-                    }
+                    context.strokeText("Completed!", 10, 20);
+                    context.strokeText("Thanks for your participation!", 10, 40);
+                }
 
-                    function download(strokes, filename) 
-                    {
-                        var data = "";
-                        var firstLine = "<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?>\n"
-                        data += firstLine;
-                        var secondLine = "<Gesture Name=\"" + graphNames[graphNum] + twoDigitFormatter(run + 1) +"\">\n";
-                        data += secondLine;
-                        for(let j = 0; j < strokes.length; ++j)
-                        {
-                            data += "<Stroke>\n";
-                            for (let i = 0; i < strokes[j].length; i++) {
-                                data += pointFormatter(strokes[j][i]);
-                            }
-                            data += "</Stroke>\n";
-                        }
-                        
-                        data += "</Gesture> \n";
-                        var file = new Blob([data], {type: "text/xml"});
-                            var a = document.createElement("a"),
-                            url = URL.createObjectURL(file);
-                            a.href = url;
-                            a.download = filename;
-                            document.body.appendChild(a);
-                            a.click();
-                    }
 
-                    function pointFormatter(point)
-                    {
-                        var str = "";
-                        str = "\t<Point X=\""+ point[0] +"\" Y=\""+ point[1] + "\" T=\"0\" />\n"
-                        return str;
-                    }
+                
+            }
+            document.body.appendChild(button);
+            document.body.appendChild(button1);
 
-                    function twoDigitFormatter(number)
-                    {
-                        var output = number + '';
-                        while (output.length < 2) 
-                            {
-                                output = '0' + output;
-                            }
-                        return output;
+            //Displaying initial prompt
+            context.font = "20px Arial";
+            context.strokeText((graphNum+1) + ". " + graphNames[graphNum], 10, 40);
+            context.strokeText("round: " + run, 10, 20);
+
+            //event listeners
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mousedown', position);
+            canvas.addEventListener('mouseup', mouseUp);
+            //FOR DEBUGGING DELETE LATER
+            document.addEventListener('keyup', event => {
+                if (event.code === 'Space') {
+                    p = "";
+                    for (let i = 0; i < strokes.length; i++) {
+                        p += strokes[i] + " | ";
                     }
-                    
+                }
+                alert(p);
+            })
+    
+            //position variable
+            var pos = { x: 0, y: 0 };
+
+            //contains strokes
+            var strokes = [];
+    
+            //functions for event listeners
+            function mouseUp(mouse) {
+                position(mouse);
+                context.lineWidth = 1;
+                strokes.push(points);
+                points = [];
+            }
+    
+            function position(mouse) {
+                pos.x = mouse.clientX - 10;
+                pos.y = mouse.clientY - 7;
+            }
+    
+            function draw(mouse) {
+                if (mouse.buttons !== 1)
+                    return;
+                context.beginPath();
+                context.lineWidth = 5;
+    
+                context.moveTo(pos.x, pos.y);
+                storePoint(pos.x, pos.y);
+                position(mouse);
+                context.lineTo(pos.x, pos.y);
+    
+                context.stroke();
+                context.closePath();
+            }
+    
+            //store image points
+            points = [];
+            function storePoint(x,y) {
+                points.push([x, y]);
+            }
+
+            function download(strokes, filename) 
+            {
+                var data = "";
+                var firstLine = "<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?>\n"
+                data += firstLine;
+                var secondLine = "<Gesture Name=\"" + graphNames[graphNum] + twoDigitFormatter(run + 1) +"\">\n";
+                data += secondLine;
+                for(let j = 0; j < strokes.length; ++j)
+                {
+                    data += "\t<Stroke>\n";
+                    for (let i = 0; i < strokes[j].length; i++) {
+                        data += pointFormatter(strokes[j][i]);
+                    }
+                    data += "\t</Stroke>\n";
+                }
+                
+                data += "</Gesture> \n";
+                var file = new Blob([data], {type: "text/xml"});
+                    var a = document.createElement("a"),
+                    url = URL.createObjectURL(file);
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+            }
+
+            function pointFormatter(point)
+            {
+                var str = "";
+                str = "\t\t<Point X=\""+ point[0] +"\" Y=\""+ point[1] + "\" T=\"0\" />\n"
+                return str;
+            }
+
+            function twoDigitFormatter(number)
+            {
+                var output = number + '';
+                while (output.length < 2) 
+                    {
+                        output = '0' + output;
+                    }
+                return output;
+            }
             
-                </script>
-            </body>
-             </html>        
+    
+        </script>
+    </body>
+     </html>        
